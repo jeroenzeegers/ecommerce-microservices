@@ -15,6 +15,7 @@
     <name>ecommerce-microservices</name>
 
     <modules>
+        <module>common-lib</module>
         <module>shipping-service</module>
         <module>notification-service</module>
         <module>order-service</module>
@@ -23,13 +24,13 @@
         <module>inventory-service</module>
         <module>favourite-service</module>
         <module>search-service</module>
-        <module>product-service</module>
         <module>user-service</module>
         <module>api-gateway</module>
         <module>discovery-service</module>
         <module>promotion-service</module>
         <module>rating-service</module>
         <module>tax-service</module>
+        <module>media-service</module>
     </modules>
 
     <properties>

@@ -62,6 +62,12 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+        
+        <!-- Datadog APM -->
+        <dependency>
+            <groupId>com.datadoghq</groupId>
+            <artifactId>dd-trace-api</artifactId>
+        </dependency>
 
     </dependencies>
     <build>

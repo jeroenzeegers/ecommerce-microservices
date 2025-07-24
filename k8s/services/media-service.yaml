@@ -1,0 +1,126 @@
+# Media Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-service
+  namespace: ecommerce
+  labels:
+    app: media-service
+    version: v1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: media-service
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: media-service
+        version: v1
+      annotations:
+        ad.datadoghq.com/media-service.logs: '[{"source": "java", "service": "media-service"}]'
+    spec:
+      containers:
+      - name: media-service
+        image: ghcr.io/hoangtien2k3/ecommerce-media-service:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: DD_AGENT_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: DD_SERVICE
+          value: "media-service"
+        - name: DD_ENV
+          value: "production"
+        - name: DD_VERSION
+          value: "1.0"
+        - name: DD_TRACE_ENABLED
+          value: "true"
+        - name: DD_LOGS_INJECTION
+          value: "true"
+        - name: SPRING_PROFILES_ACTIVE
+          value: "prod"
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://postgres:5432/mediadb"
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+
+---
+# Media Service Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-service
+  namespace: ecommerce
+  labels:
+    app: media-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: media-service
+
+---
+# Media Service HPA
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: media-service-hpa
+  namespace: ecommerce
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: media-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

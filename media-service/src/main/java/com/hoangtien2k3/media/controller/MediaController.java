@@ -44,6 +44,7 @@ public class MediaController {
             content = @Content(schema = @Schema(implementation = NoFileMediaVm.class))),
         @ApiResponse(responseCode = "400", description = "Bad request",
             content = @Content(schema = @Schema(implementation = ErrorVm.class)))})
+    @Trace(operationName = "ecommerce-microservices.media.createMedia")
     public ResponseEntity<Object> create(@ModelAttribute @Valid MediaPostVm mediaPostVm) {
         Media media = mediaService.saveMedia(mediaPostVm);
         NoFileMediaVm noFileMediaVm =
@@ -58,6 +59,7 @@ public class MediaController {
         @ApiResponse(responseCode = "400", description = "Bad request",
             content = @Content(schema = @Schema(implementation = ErrorVm.class)))
     })
+    @Trace(operationName = "ecommerce-microservices.media.deleteMedia")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         mediaService.removeMedia(id);
         return ResponseEntity.noContent().build();
@@ -67,6 +69,7 @@ public class MediaController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok",
             content = @Content(schema = @Schema(implementation = MediaVm.class)))})
+    @Trace(operationName = "ecommerce-microservices.media.getMediaById")
     public ResponseEntity<MediaVm> get(@PathVariable Long id) {
         MediaVm media = mediaService.getMediaById(id);
         if (media == null) {
@@ -79,6 +82,7 @@ public class MediaController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ok",
             content = @Content(schema = @Schema(implementation = MediaVm.class)))})
+    @Trace(operationName = "ecommerce-microservices.media.getMediaByIds")
     public ResponseEntity<List<MediaVm>> getByIds(@RequestParam @NotEmpty List<Long> ids) {
         var medias = mediaService.getMediaByIds(ids);
         if (medias.isEmpty()) {
