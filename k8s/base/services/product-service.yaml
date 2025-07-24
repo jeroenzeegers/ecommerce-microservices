@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  namespace: ecommerce
+  labels:
+    app: product-service
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+        version: v1
+    spec:
+      containers:
+      - name: product-service
+        image: ghcr.io/YOUR_USERNAME/ecommerce-product-service:latest
+        ports:
+        - containerPort: 8086
+        env:
+        - name: DD_AGENT_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: ecommerce-config
+              key: DD_AGENT_HOST
+        - name: DD_TRACE_AGENT_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: ecommerce-config
+              key: DD_TRACE_AGENT_PORT
+        - name: DD_SERVICE
+          value: product-service
+        - name: DD_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: ecommerce-config
+              key: DD_ENV
+        - name: DD_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: ecommerce-config
+              key: DD_VERSION
+        - name: DD_PROFILING_ENABLED
+          value: 'false'
+        - name: DD_LOGS_INJECTION
+          value: 'true'
+        - name: DD_TRACE_ENABLED
+          value: 'true'
+        - name: EUREKA_URI
+          valueFrom:
+            configMapKeyRef:
+              name: ecommerce-config
+              key: EUREKA_URI
+        - name: SPRING_DATASOURCE_URL
+          value: jdbc:mysql://mysql.ecommerce-infrastructure.svc.cluster.local:3306/productservice?useSSL=false
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 250m
+          limits:
+            memory: 1Gi
+            cpu: 500m
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8086
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8086
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: ecommerce
+  labels:
+    app: product-service
+spec:
+  selector:
+    app: product-service
+  ports:
+  - port: 8086
+    targetPort: 8086
+    protocol: TCP
+  type: ClusterIP

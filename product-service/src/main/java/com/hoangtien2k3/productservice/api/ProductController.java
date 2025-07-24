@@ -3,6 +3,7 @@ package com.hoangtien2k3.productservice.api;
 import com.hoangtien2k3.productservice.dto.ProductDto;
 import com.hoangtien2k3.productservice.dto.response.collection.DtoCollectionResponse;
 import com.hoangtien2k3.productservice.service.ProductService;
+import datadog.trace.api.Trace;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ public class ProductController {
 
     // Get a list of all products
     @GetMapping
+    @Trace(operationName = "product.findAll")
     public Flux<List<ProductDto>> findAll() {
         log.info("ProductDto List, controller; fetch all categories");
         return productService.findAll();
@@ -34,6 +36,7 @@ public class ProductController {
 
     // Get detailed information of a specific product
     @GetMapping("/{productId}")
+    @Trace(operationName = "product.findById")
     public ResponseEntity<ProductDto> findById(@PathVariable("productId")
                                                @NotBlank(message = "Input must not be blank!")
                                                @Valid final String productId) {
@@ -43,6 +46,7 @@ public class ProductController {
 
     // Create a new product
     @PostMapping
+    @Trace(operationName = "product.save")
     public ResponseEntity<ProductDto> save(@RequestBody
                                            @NotNull(message = "Input must not be NULL!")
                                            @Valid final ProductDto productDto) {

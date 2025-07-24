@@ -2,6 +2,7 @@ package com.hoangtien2k3.userservice.api;
 
 import com.hoangtien2k3.userservice.http.HeaderGenerator;
 import com.hoangtien2k3.userservice.service.RoleService;
+import datadog.trace.api.Trace;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -37,6 +38,7 @@ public class UserRole {
     })
     @PostMapping("/{id}/assign-roles")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Trace(operationName = "user.UserRole.assignRoles")
     public ResponseEntity<?> assignRoles(@PathVariable Long id, @RequestBody String roleNames) {
         boolean success = roleService.assignRole(id, roleNames);
         if (success) {
@@ -56,6 +58,7 @@ public class UserRole {
     })
     @PostMapping("/{id}/revoke-roles")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Trace(operationName = "user.UserRole.revokeRoles")
     public ResponseEntity<?> revokeRoles(@PathVariable Long id, @RequestBody String roleNames) {
         boolean success = roleService.revokeRole(id, roleNames);
         if (success) {
@@ -74,6 +77,7 @@ public class UserRole {
             @ApiResponse(code = 404, message = "User not found", response = ResponseEntity.class)
     })
     @GetMapping("/{id}/user-roles")
+    @Trace(operationName = "user.UserRole.getUserRoles")
     public ResponseEntity<List<String>> getUserRoles(@PathVariable Long id) {
         List<String> userRoles = roleService.getUserRoles(id);
         return new ResponseEntity<>(userRoles,

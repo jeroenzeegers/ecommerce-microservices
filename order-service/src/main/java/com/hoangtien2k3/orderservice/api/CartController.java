@@ -22,6 +22,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
+import datadog.trace.api.Trace;
 
 @Slf4j
 @RequiredArgsConstructor

@@ -1,0 +1,167 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ecommerce-ingress
+  namespace: ecommerce
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+spec:
+  rules:
+  - host: ecommerce.local
+    http:
+      paths:
+      # API Gateway - Main entry point
+      - path: /api/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 8080
+      
+      # Direct service access for development/debugging
+      - path: /eureka/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: discovery-service
+            port:
+              number: 8761
+      
+      - path: /users/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: user-service
+            port:
+              number: 8081
+      
+      - path: /products/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: product-service
+            port:
+              number: 8086
+      
+      - path: /orders/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: order-service
+            port:
+              number: 8082
+      
+      - path: /payments/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: payment-service
+            port:
+              number: 8083
+      
+      - path: /inventory/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: inventory-service
+            port:
+              number: 8084
+      
+      - path: /notifications/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: notification-service
+            port:
+              number: 8085
+      
+      - path: /shipping/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: shipping-service
+            port:
+              number: 8087
+      
+      - path: /favourites/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: favourite-service
+            port:
+              number: 8088
+      
+      - path: /promotions/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: promotion-service
+            port:
+              number: 8089
+      
+      - path: /ratings/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: rating-service
+            port:
+              number: 8090
+      
+      - path: /tax/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: tax-service
+            port:
+              number: 8091
+      
+      - path: /search/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: search-service
+            port:
+              number: 8092
+      
+      - path: /media/(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: media-service
+            port:
+              number: 8093
+---
+# Alternative ingress for HTTPS/TLS (uncomment and configure as needed)
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: ecommerce-ingress-tls
+#   namespace: ecommerce
+#   annotations:
+#     kubernetes.io/ingress.class: "nginx"
+#     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+#     nginx.ingress.kubernetes.io/ssl-redirect: "true"
+# spec:
+#   tls:
+#   - hosts:
+#     - ecommerce.yourdomain.com
+#     secretName: ecommerce-tls
+#   rules:
+#   - host: ecommerce.yourdomain.com
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: api-gateway
+#             port:
+#               number: 8080

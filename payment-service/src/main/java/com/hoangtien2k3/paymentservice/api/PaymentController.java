@@ -23,6 +23,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
+import datadog.trace.api.Trace;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -85,6 +86,10 @@ public class PaymentController {
 
 
     @GetMapping("/getOrder/{orderId}")
+
+
+
+    @Trace(operationName = "ecommerce-microservices.payment.getOrderDto")
     public ResponseEntity<Mono<OrderDto>> getOrderDto(@PathVariable("orderId") final Integer orderId) {
         return ResponseEntity.ok(paymentServiceImpl.getOrderDto(orderId));
     }

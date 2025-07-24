@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import datadog.trace.api.Trace;
 
 @Validated
 @RestController
@@ -88,6 +89,8 @@ public class MediaController {
 
     @Hidden
     @GetMapping("/medias/{id}/file/{fileName}")
+
+    @Trace(operationName = "ecommerce-microservices.media.getFile")
     public ResponseEntity<InputStreamResource> getFile(@PathVariable Long id, @PathVariable String fileName) {
         MediaDto mediaDto = mediaService.getFile(id, fileName);
 

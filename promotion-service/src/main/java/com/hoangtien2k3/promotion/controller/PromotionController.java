@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import datadog.trace.api.Trace;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,6 +32,9 @@ public class PromotionController {
     private final PromotionService promotionService;
 
     @GetMapping("/backoffice/promotions")
+
+
+    @Trace(operationName = "ecommerce-microservices.promotion.listPromotions")
     public ResponseEntity<PromotionListVm> listPromotions(
             @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "5") int pageSize,
@@ -100,6 +104,9 @@ public class PromotionController {
     }
 
     @GetMapping("/backoffice/promotions/{promotionId}")
+
+
+    @Trace(operationName = "ecommerce-microservices.promotion.getPromotion")
     public ResponseEntity<PromotionDetailVm> getPromotion(@PathVariable("promotionId") Long promotionId) {
         PromotionDetailVm promotionDetailVm = promotionService.getPromotion(promotionId);
         return new ResponseEntity<>(promotionDetailVm, HttpStatus.OK);

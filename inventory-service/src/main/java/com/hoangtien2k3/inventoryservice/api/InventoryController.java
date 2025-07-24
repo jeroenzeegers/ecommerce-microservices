@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import datadog.trace.api.Trace;
 
 @RestController
 @RequestMapping("/api/inventory")
@@ -41,6 +42,8 @@ public class InventoryController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/validateToken")
+
+    @Trace(operationName = "ecommerce-microservices.inventory.getOrderDetails")
     public String getOrderDetails(@RequestHeader(name = "Authorization") String authorizationHeader) {
         if (jwtValidate.validateTokenUserService(authorizationHeader)) {
             return inventoryService.getTokenUserService(authorizationHeader);

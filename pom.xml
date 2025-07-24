@@ -57,6 +57,7 @@
         <testcontainers-keycloak.version>3.3.0</testcontainers-keycloak.version>
         <rest-assured.version>5.4.0</rest-assured.version>
         <instancio-junit.version>4.8.1</instancio-junit.version>
+        <dd-trace-api.version>1.38.1</dd-trace-api.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -102,6 +103,11 @@
                 <artifactId>instancio-junit</artifactId>
                 <version>${instancio-junit.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.datadoghq</groupId>
+                <artifactId>dd-trace-api</artifactId>
+                <version>${dd-trace-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

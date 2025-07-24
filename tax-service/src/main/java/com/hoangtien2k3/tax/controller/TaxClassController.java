@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
+import datadog.trace.api.Trace;
 
 @RestController
 @RequestMapping(ApiConstant.TAX_CLASS_URL)
@@ -37,6 +38,9 @@ public class TaxClassController {
     }
 
     @GetMapping("/paging")
+
+
+    @Trace(operationName = "ecommerce-microservices.taxclass.getPageableTaxClasses")
     public ResponseEntity<TaxClassListGetVm> getPageableTaxClasses(
         @RequestParam(value = "pageNo", defaultValue = PageableConstant.DEFAULT_PAGE_NUMBER, required = false)
         final int pageNo,
@@ -46,6 +50,9 @@ public class TaxClassController {
     }
 
     @GetMapping
+
+
+    @Trace(operationName = "ecommerce-microservices.taxclass.listTaxClasses")
     public ResponseEntity<List<TaxClassVm>> listTaxClasses() {
         return ResponseEntity.ok(taxClassService.findAllTaxClasses());
     }

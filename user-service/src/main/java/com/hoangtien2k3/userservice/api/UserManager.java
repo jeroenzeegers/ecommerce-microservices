@@ -2,6 +2,7 @@ package com.hoangtien2k3.userservice.api;
 
 import com.hoangtien2k3.userservice.exception.wrapper.TokenErrorOrAccessTimeOut;
 import com.hoangtien2k3.userservice.exception.wrapper.UserNotFoundException;
+import datadog.trace.api.Trace;
 import com.hoangtien2k3.userservice.http.HeaderGenerator;
 import com.hoangtien2k3.userservice.model.dto.request.ChangePasswordRequest;
 import com.hoangtien2k3.userservice.model.dto.request.SignUp;
@@ -49,6 +50,7 @@ public class UserManager {
     })
     @PutMapping("update/{id}")
     @PreAuthorize("isAuthenticated() and hasAuthority('USER')")
+    @Trace(operationName = "user.UserManager.update")
     public Mono<ResponseEntity<ResponseMessage>> update(@PathVariable("id") Long id, @RequestBody SignUp updateDTO) {
         return userService.update(id, updateDTO)
                 .flatMap(user -> Mono.just(new ResponseEntity<>(
@@ -70,6 +72,7 @@ public class UserManager {
             response = String.class)
     @PutMapping("/change-password")
     @PreAuthorize("isAuthenticated() and hasAuthority('USER')")
+    @Trace(operationName = "user.UserManager.changePassword")
     public Mono<String> changePassword(@RequestBody ChangePasswordRequest request) {
         return userService.changePassword(request);
     }
@@ -78,6 +81,7 @@ public class UserManager {
             notes = "Delete a user with the specified ID.")
     @DeleteMapping("delete/{id}")
     @PreAuthorize("isAuthenticated() and (hasAuthority('USER') or hasAuthority('ADMIN'))")
+    @Trace(operationName = "user.UserManager.delete")
     public String delete(@PathVariable("id") Long id) {
         return userService.delete(id);
     }
@@ -86,6 +90,7 @@ public class UserManager {
             notes = "Retrieve user information based on the provided username.")
     @GetMapping("/user")
     @PreAuthorize("(isAuthenticated() and (hasAuthority('USER') and principal.username == #username) or hasAuthority('ADMIN'))")
+    @Trace(operationName = "user.UserManager.getUserByUsername")
     public ResponseEntity<?> getUserByUsername(@RequestParam(value = "username") String username) {
         Optional<UserDto> user = Optional.ofNullable(userService.findByUsername(username)
                 .map((element) -> modelMapper.map(element, UserDto.class))
@@ -107,6 +112,7 @@ public class UserManager {
     })
     @GetMapping("/user/{id}")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER') and principal.id == #id")
+    @Trace(operationName = "user.UserManager.getUserById")
     public ResponseEntity<?> getUserById(@PathVariable("id") Long id) {
         Optional<UserDto> userDTO = Optional.ofNullable(userService.findById(id)
                 .map((element) -> modelMapper.map(element, UserDto.class))
@@ -121,6 +127,7 @@ public class UserManager {
     )
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Trace(operationName = "user.UserManager.getAllUsers")
     public ResponseEntity<Page<UserDto>> getAllUsers(@RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "10") int size,
                                                      @RequestParam(defaultValue = "id") String sortBy,
@@ -137,6 +144,7 @@ public class UserManager {
             @ApiResponse(code = 404, message = "User not found", response = ResponseEntity.class)
     })
     @GetMapping("/info")
+    @Trace(operationName = "user.UserManager.getUserInfo")
     public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") String token) {
         String username = jwtProvider.getUserNameFromToken(token);
         UserDto user = userService.findByUsername(username)

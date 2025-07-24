@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import datadog.trace.api.Trace;
 
 @RestController
 public class ProductController {
@@ -18,6 +19,9 @@ public class ProductController {
     }
 
     @GetMapping("/storefront/catalog-search")
+
+
+    @Trace(operationName = "ecommerce-microservices.product.findProductAdvance")
     public ResponseEntity<ProductListGetVm> findProductAdvance(@RequestParam(defaultValue = "") String keyword,
                                                                @RequestParam(defaultValue = "0") Integer page,
                                                                @RequestParam(defaultValue = "12") Integer size,
@@ -33,6 +37,9 @@ public class ProductController {
     }
 
     @GetMapping("/storefront/search_suggest")
+
+
+    @Trace(operationName = "ecommerce-microservices.product.productSearchAutoComplete")
     public ResponseEntity<ProductNameListVm> productSearchAutoComplete(@RequestParam String keyword) {
         return ResponseEntity.ok(productService.autoCompleteProductName(keyword));
     }

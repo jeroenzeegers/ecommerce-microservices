@@ -2,6 +2,7 @@ package com.hoangtien2k3.userservice.api;
 
 import com.hoangtien2k3.userservice.model.dto.request.Login;
 import com.hoangtien2k3.userservice.model.dto.request.SignUp;
+import datadog.trace.api.Trace;
 import com.hoangtien2k3.userservice.model.dto.response.TokenValidationResponse;
 import com.hoangtien2k3.userservice.model.dto.response.InformationMessage;
 import com.hoangtien2k3.userservice.model.dto.response.JwtResponseMessage;
@@ -51,6 +52,7 @@ public class UserAuth {
             @ApiResponse(code = 500, message = "Internal Server Error", response = ResponseMessage.class)
     })
     @PostMapping({"/signup", "/register"})
+    @Trace(operationName = "user.UserAuth.register")
     public Mono<ResponseMessage> register(@Valid @RequestBody SignUp signUp) {
         return userService.register(signUp)
                 .map(user -> new ResponseMessage("Create user: " + signUp.getUsername() + " successfully."))
@@ -63,6 +65,7 @@ public class UserAuth {
             @ApiResponse(code = 500, message = "Internal Server Error", response = ResponseEntity.class)
     })
     @PostMapping({"/signin", "/login"})
+    @Trace(operationName = "user.UserAuth.login")
     public Mono<ResponseEntity<JwtResponseMessage>> login(@Valid @RequestBody Login signInForm) {
         return userService.login(signInForm)
                 .map(ResponseEntity::ok)
@@ -83,6 +86,7 @@ public class UserAuth {
     })
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated() and hasAuthority('USER')")
+    @Trace(operationName = "user.UserAuth.logout")
     public Mono<ResponseEntity<String>> logout() {
         log.info("Logout endpoint called");
         return userService.logout()
@@ -123,6 +127,7 @@ public class UserAuth {
             @ApiResponse(code = 401, message = "Unauthorized", response = TokenValidationResponse.class)
     })
     @GetMapping({"/validateToken", "/validate-token"})
+    @Trace(operationName = "user.UserAuth.validateToken")
     public Boolean validateToken(@RequestHeader(name = "Authorization") String authorizationToken) {
         TokenValidate validate = new TokenValidate();
         if (validate.validateToken(authorizationToken)) {
@@ -139,6 +144,7 @@ public class UserAuth {
             @ApiResponse(code = 401, message = "Unauthorized", response = TokenValidationResponse.class)
     })
     @GetMapping({"/hasAuthority", "/authorization"})
+    @Trace(operationName = "user.UserAuth.getAuthority")
     public Boolean getAuthority(@RequestHeader(name = "Authorization") String authorizationToken,
                                 String requiredRole) {
         AuthorityTokenUtil authorityTokenUtil = new AuthorityTokenUtil();

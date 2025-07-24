@@ -1,5 +1,6 @@
 package com.hoangtien2k3qx1.favouriteservice.api;
 
+import datadog.trace.api.Trace;
 import com.hoangtien2k3qx1.favouriteservice.constant.ConfigConstant;
 import com.hoangtien2k3qx1.favouriteservice.dto.FavouriteDto;
 import com.hoangtien2k3qx1.favouriteservice.dto.response.collection.DtoCollectionResponse;
@@ -26,11 +27,13 @@ public class FavouriteApi {
     private final FavouriteService favouriteService;
 
     @GetMapping
+    @Trace(operationName = "favourite.controller.findAll")
     public ResponseEntity<DtoCollectionResponse<FavouriteDto>> findAll() {
         return ResponseEntity.ok(new DtoCollectionResponse<>(this.favouriteService.findAll()));
     }
 
     @GetMapping("/{userId}/{productId}/{likeDate}")
+    @Trace(operationName = "favourite.controller.findById")
     public ResponseEntity<FavouriteDto> findById(@PathVariable("userId") final String userId,
                                                  @PathVariable("productId") final String productId,
                                                  @PathVariable("likeDate") final String likeDate) {
@@ -40,6 +43,7 @@ public class FavouriteApi {
     }
 
     @GetMapping("/find")
+    @Trace(operationName = "favourite.controller.findByIdBody")
     public ResponseEntity<FavouriteDto> findById(@RequestBody
                                                  @NotNull(message = "Input must not be NULL")
                                                  @Valid final FavouriteId favouriteId) {
@@ -47,6 +51,7 @@ public class FavouriteApi {
     }
 
     @PostMapping
+    @Trace(operationName = "favourite.controller.save")
     public ResponseEntity<FavouriteDto> save(@RequestBody
                                              @NotNull(message = "Input must not be NULL")
                                              @Valid final FavouriteDto favouriteDto) {
@@ -54,6 +59,7 @@ public class FavouriteApi {
     }
 
     @PutMapping
+    @Trace(operationName = "favourite.controller.update")
     public ResponseEntity<FavouriteDto> update(@RequestBody
                                                @NotNull(message = "Input must not be NULL")
                                                @Valid final FavouriteDto favouriteDto) {
@@ -61,6 +67,7 @@ public class FavouriteApi {
     }
 
     @DeleteMapping("/{userId}/{productId}/{likeDate}")
+    @Trace(operationName = "favourite.controller.deleteById")
     public ResponseEntity<Boolean> deleteById(@PathVariable("userId") final String userId,
                                               @PathVariable("productId") final String productId,
                                               @PathVariable("likeDate") final String likeDate) {
@@ -72,6 +79,7 @@ public class FavouriteApi {
     }
 
     @DeleteMapping("/delete")
+    @Trace(operationName = "favourite.controller.deleteByIdBody")
     public ResponseEntity<Boolean> deleteById(@RequestBody
                                               @NotNull(message = "Input must not be NULL")
                                               @Valid final FavouriteId favouriteId) {

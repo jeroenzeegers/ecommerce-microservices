@@ -50,6 +50,11 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+		<dependency>
+			<groupId>com.datadoghq</groupId>
+			<artifactId>dd-trace-api</artifactId>
+		</dependency>
+
     </dependencies>
     <build>
         <plugins>

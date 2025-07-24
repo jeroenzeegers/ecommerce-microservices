@@ -1,5 +1,6 @@
 package com.hoangtien2k3.rating.controller;
 
+import datadog.trace.api.Trace;
 import com.hoangtien2k3.rating.service.RatingService;
 import com.hoangtien2k3.rating.viewmodel.RatingListVm;
 import com.hoangtien2k3.rating.viewmodel.RatingPostVm;
@@ -28,6 +29,7 @@ public class RatingController {
     }
 
     @GetMapping("/backoffice/ratings")
+    @Trace(operationName = "rating.controller.getRatingListWithFilter")
     public ResponseEntity<RatingListVm> getRatingListWithFilter(
             @RequestParam(value = "productName", defaultValue = "", required = false) String productName,
             @RequestParam(value = "customerName", defaultValue = "", required = false) String cusName,
@@ -48,11 +50,13 @@ public class RatingController {
     }
 
     @DeleteMapping("/backoffice/ratings/{id}")
+    @Trace(operationName = "rating.controller.deleteRating")
     public ResponseEntity<ResponeStatusVm> deleteRating(@PathVariable Long id) {
         return ResponseEntity.ok(ratingService.deleteRating(id));
     }
 
     @GetMapping({"/storefront/ratings/products/{productId}"})
+    @Trace(operationName = "rating.controller.getRatingList")
     public ResponseEntity<RatingListVm> getRatingList(
             @PathVariable Long productId,
             @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
@@ -62,11 +66,13 @@ public class RatingController {
     }
 
     @PostMapping("/storefront/ratings")
+    @Trace(operationName = "rating.controller.createRating")
     public ResponseEntity<RatingVm> createRating(@Valid @RequestBody RatingPostVm ratingPostVm) {
         return ResponseEntity.ok(ratingService.createRating(ratingPostVm));
     }
 
     @GetMapping("/storefront/ratings/product/{productId}/average-star")
+    @Trace(operationName = "rating.controller.getAverageStarOfProduct")
     public Double getAverageStarOfProduct(@PathVariable Long productId) {
         return ratingService.calculateAverageStar(productId);
     }

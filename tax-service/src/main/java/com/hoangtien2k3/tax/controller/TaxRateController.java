@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
+import datadog.trace.api.Trace;
 
 @RestController
 @RequestMapping(ApiConstant.TAX_RATE_URL)
@@ -37,6 +38,9 @@ public class TaxRateController {
     }
 
     @GetMapping("/paging")
+
+
+    @Trace(operationName = "ecommerce-microservices.taxrate.getPageableTaxRates")
     public ResponseEntity<TaxRateListGetVm> getPageableTaxRates(
         @RequestParam(value = "pageNo", defaultValue = PageableConstant.DEFAULT_PAGE_NUMBER, required = false)
         final int pageNo,
@@ -99,6 +103,9 @@ public class TaxRateController {
     }
 
     @GetMapping("/tax-percent")
+
+
+    @Trace(operationName = "ecommerce-microservices.taxrate.getTaxPercentByAddress")
     public ResponseEntity<Double> getTaxPercentByAddress(
         @RequestParam(value = "taxClassId", required = true) final Long taxClassId,
         @RequestParam(value = "countryId", required = true) final Long countryId,
@@ -108,6 +115,9 @@ public class TaxRateController {
     }
 
     @GetMapping("/location-based-batch")
+
+
+    @Trace(operationName = "ecommerce-microservices.taxrate.getBatchTaxPercentsByAddress")
     public ResponseEntity<List<TaxRateVm>> getBatchTaxPercentsByAddress(
         @RequestParam(value = "taxClassIds", required = true) final List<Long> taxClassIds,
         @RequestParam(value = "countryId", required = true) final Long countryId,

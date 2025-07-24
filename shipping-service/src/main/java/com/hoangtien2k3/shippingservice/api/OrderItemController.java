@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import datadog.trace.api.Trace;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,12 +28,18 @@ public class OrderItemController {
     private final JwtValidate jwtValidate;
 
     @GetMapping
+
+
+    @Trace(operationName = "ecommerce-microservices.orderitem.findAll")
     public ResponseEntity<DtoCollectionResponse<OrderItemDto>> findAll() {
         log.info("OrderItemDto List, controller; fetch all orderItems");
         return ResponseEntity.ok(new DtoCollectionResponse<>(this.orderItemService.findAll()));
     }
 
     @GetMapping("/{orderId}/{productId}")
+
+
+    @Trace(operationName = "ecommerce-microservices.orderitem.findById")
     public ResponseEntity<OrderItemDto> findById(@PathVariable("orderId") final String orderId,
                                                  @PathVariable("productId") final String productId) {
         log.info("OrderItemDto, resource; fetch orderItem by id");
@@ -41,6 +48,9 @@ public class OrderItemController {
     }
 
     @GetMapping("/find")
+
+
+    @Trace(operationName = "ecommerce-microservices.orderitem.findById")
     public ResponseEntity<OrderItemDto> findById(@RequestBody
                                                  @NotNull(message = "Input must not be NULL")
                                                  @Valid final OrderItemId orderItemId) {
@@ -49,6 +59,9 @@ public class OrderItemController {
     }
 
     @PostMapping
+
+
+    @Trace(operationName = "ecommerce-microservices.orderitem.save")
     public ResponseEntity<OrderItemDto> save(@RequestHeader(name = "Authorization") String authorizationHeader,
                                              @RequestBody @NotNull(message = "Input must not be NULL")
                                              @Valid final OrderItemDto orderItemDto) {
@@ -60,6 +73,9 @@ public class OrderItemController {
     }
 
     @PutMapping
+
+
+    @Trace(operationName = "ecommerce-microservices.orderitem.update")
     public ResponseEntity<OrderItemDto> update(@RequestHeader(name = "Authorization") String authorizationHeader,
                                                @RequestBody
                                                @NotNull(message = "Input must not be NULL")
@@ -72,6 +88,9 @@ public class OrderItemController {
     }
 
     @DeleteMapping("/{orderId}/{productId}")
+
+
+    @Trace(operationName = "ecommerce-microservices.orderitem.deleteById")
     public ResponseEntity<Boolean> deleteById(@RequestHeader(name = "Authorization") String authorizationHeader,
                                               @PathVariable("orderId") final String orderId,
                                               @PathVariable("productId") final String productId) {
@@ -84,6 +103,9 @@ public class OrderItemController {
     }
 
     @DeleteMapping("/delete")
+
+
+    @Trace(operationName = "ecommerce-microservices.orderitem.deleteById")
     public ResponseEntity<Boolean> deleteById(@RequestHeader(name = "Authorization") String authorizationHeader,
                                               @RequestBody
                                               @NotNull(message = "Input must not be NULL")

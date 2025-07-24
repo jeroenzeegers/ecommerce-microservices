@@ -20,6 +20,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
+import datadog.trace.api.Trace;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -142,6 +143,10 @@ public class OrderController {
 
 
     @GetMapping("/existOrderId")
+
+
+
+    @Trace(operationName = "ecommerce-microservices.order.existsByOrderId")
     public Boolean existsByOrderId(Integer orderId) {
         return orderService.existsByOrderId(orderId);
     }

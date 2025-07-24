@@ -1,0 +1,195 @@
+version: '3.9'
+
+# This file extends the main docker-compose.yml with Datadog APM configuration
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.datadog.override.yml up
+
+services:
+  # Add Datadog agent
+  datadog-agent:
+    image: gcr.io/datadoghq/agent:latest
+    container_name: datadog-agent
+    env_file:
+      - .env.datadog
+    environment:
+      - DD_CONTAINER_EXCLUDE="name:datadog-agent"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /opt/datadog-agent/run:/opt/datadog-agent/run:rw
+    ports:
+      - "8126:8126/tcp" # APM receiver port
+      - "8125:8125/udp" # DogStatsD port
+    networks:
+      - ecommerce-network
+
+  # Configure all services to use Datadog
+  api-gateway:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=api-gateway
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  discovery-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=discovery-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  product-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=product-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  order-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=order-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  payment-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=payment-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  inventory-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=inventory-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  user-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=user-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  notification-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=notification-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  shipping-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=shipping-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  favourite-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=favourite-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  promotion-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=promotion-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  rating-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=rating-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  tax-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=tax-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  search-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=search-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+  media-service:
+    environment:
+      - DD_AGENT_HOST=datadog-agent
+      - DD_TRACE_AGENT_PORT=8126
+      - DD_SERVICE=media-service
+      - DD_ENV=development
+      - DD_VERSION=1.0.0
+      - DD_PROFILING_ENABLED=false
+      - DD_LOGS_INJECTION=true
+      - DD_TRACE_ENABLED=true
+
+networks:
+  ecommerce-network:
+    external: true

@@ -105,6 +105,11 @@
 		</dependency>
 
 
+		<dependency>
+			<groupId>com.datadoghq</groupId>
+			<artifactId>dd-trace-api</artifactId>
+		</dependency>
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -115,6 +120,11 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+		<dependency>
+			<groupId>com.datadoghq</groupId>
+			<artifactId>dd-trace-api</artifactId>
+		</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 

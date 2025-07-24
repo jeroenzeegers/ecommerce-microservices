@@ -111,6 +111,11 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
+		<dependency>
+			<groupId>com.datadoghq</groupId>
+			<artifactId>dd-trace-api</artifactId>
+		</dependency>
+
     </dependencies>
 
     <dependencyManagement>
@@ -122,6 +127,11 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+		<dependency>
+			<groupId>com.datadoghq</groupId>
+			<artifactId>dd-trace-api</artifactId>
+		</dependency>
+
         </dependencies>
     </dependencyManagement>
 
