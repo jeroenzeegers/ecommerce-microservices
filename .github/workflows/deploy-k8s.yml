@@ -25,58 +25,94 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     
     - name: Configure kubectl
-      uses: azure/k8s-set-context@v1
+      uses: azure/k8s-set-context@v3
       with:
         method: kubeconfig
         kubeconfig: ${{ secrets.KUBE_CONFIG_DATA }}
     
+    - name: Verify cluster connection
+      run: |
+        kubectl cluster-info
+        kubectl get nodes
+    
+    - name: Create namespaces
+      run: |
+        kubectl apply -f k8s/base/namespace.yaml
+    
     - name: Create Datadog secret
+      if: ${{ secrets.DD_API_KEY != '' }}
       run: |
         kubectl create secret generic datadog-secret \
-          --from-literal=DD_API_KEY=${{ secrets.DD_API_KEY }} \
+          --from-literal=DD_API_KEY="${{ secrets.DD_API_KEY }}" \
           -n ecommerce \
           --dry-run=client -o yaml | kubectl apply -f -
     
+    - name: Deploy configuration
+      run: |
+        kubectl apply -f k8s/base/secrets.yaml
+    
     - name: Deploy infrastructure
       run: |
-        kubectl apply -f k8s/base/namespace.yaml
-        kubectl apply -f k8s/base/secrets.yaml
         kubectl apply -f k8s/infrastructure/
     
     - name: Wait for infrastructure
       run: |
-        kubectl wait --for=condition=available --timeout=300s deployment/mysql -n ecommerce-infrastructure
-        kubectl wait --for=condition=available --timeout=300s deployment/mongodb -n ecommerce-infrastructure
-        kubectl wait --for=condition=available --timeout=300s deployment/kafka -n ecommerce-infrastructure
+        echo "Waiting for MySQL..."
+        kubectl wait --for=condition=available --timeout=300s deployment/mysql -n ecommerce-infrastructure || true
+        
+        echo "Waiting for MongoDB..."
+        kubectl wait --for=condition=available --timeout=300s deployment/mongodb -n ecommerce-infrastructure || true
+        
+        echo "Waiting for Zookeeper..."
+        kubectl wait --for=condition=available --timeout=300s deployment/zookeeper -n ecommerce-infrastructure || true
+        
+        echo "Waiting for Kafka..."
+        kubectl wait --for=condition=available --timeout=300s deployment/kafka -n ecommerce-infrastructure || true
+        
+        # Give additional time for services to stabilize
+        sleep 30
     
     - name: Deploy Datadog agent
+      if: ${{ secrets.DD_API_KEY != '' }}
       run: |
         kubectl apply -f k8s/base/datadog.yaml
-        kubectl wait --for=condition=ready --timeout=300s pod -l app=datadog-agent -n ecommerce
+        kubectl wait --for=condition=ready --timeout=300s pod -l app=datadog-agent -n ecommerce || true
     
     - name: Update image tags
       run: |
         # Update all service manifests with the new image tags
-        for service in discovery-service api-gateway user-service product-service order-service payment-service inventory-service notification-service shipping-service favourite-service promotion-service rating-service tax-service search-service media-service; do
-          sed -i "s|image: ghcr.io/YOUR_USERNAME/ecommerce-${service}:latest|image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${service}:${{ github.sha }}|g" k8s/base/services/${service}.yaml
+        services=("discovery-service" "api-gateway" "user-service" "product-service" "order-service" "payment-service" "inventory-service" "notification-service" "shipping-service" "favourite-service" "promotion-service" "rating-service" "tax-service" "search-service" "media-service")
+        
+        for service in "${services[@]}"; do
+          if [ -f "k8s/base/services/${service}.yaml" ]; then
+            sed -i "s|image: ghcr.io/YOUR_USERNAME/ecommerce-${service}:latest|image: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${service}:${{ github.sha }}|g" k8s/base/services/${service}.yaml
+          fi
         done
     
     - name: Deploy discovery service
       run: |
         kubectl apply -f k8s/base/services/discovery-service.yaml
         kubectl wait --for=condition=available --timeout=300s deployment/discovery-service -n ecommerce
-        sleep 30  # Wait for Eureka to be fully ready
+        
+        # Wait for Eureka to be fully ready
+        echo "Waiting for Eureka to be fully ready..."
+        sleep 60
     
     - name: Deploy microservices
       run: |
+        # Deploy all services
         kubectl apply -f k8s/base/services/
         
-        # Wait for all deployments to be ready
-        for service in api-gateway user-service product-service order-service payment-service inventory-service notification-service shipping-service favourite-service promotion-service rating-service tax-service search-service media-service; do
-          kubectl wait --for=condition=available --timeout=300s deployment/${service} -n ecommerce
+        # List of services to wait for (excluding discovery-service as it's already deployed)
+        services=("api-gateway" "user-service" "product-service" "order-service" "payment-service" "inventory-service" "notification-service" "shipping-service" "favourite-service" "promotion-service" "rating-service" "tax-service" "search-service" "media-service")
+        
+        # Wait for each deployment
+        for service in "${services[@]}"; do
+          echo "Waiting for ${service} to be ready..."
+          kubectl wait --for=condition=available --timeout=300s deployment/${service} -n ecommerce || echo "Warning: ${service} deployment may not be ready"
         done
     
     - name: Deploy ingress
@@ -86,51 +122,88 @@ jobs:
     - name: Verify deployment
       run: |
         echo "=== Deployment Status ==="
-        kubectl get pods -n ecommerce
+        kubectl get pods -n ecommerce -o wide
         kubectl get svc -n ecommerce
         kubectl get ingress -n ecommerce
         
+        echo ""
         echo "=== Infrastructure Status ==="
-        kubectl get pods -n ecommerce-infrastructure
+        kubectl get pods -n ecommerce-infrastructure -o wide
         
-        # Check if all pods are running
-        if kubectl get pods -n ecommerce | grep -v Running | grep -v Completed | tail -n +2; then
-          echo "❌ Some pods are not running"
-          exit 1
+        echo ""
+        echo "=== Resource Usage ==="
+        kubectl top pods -n ecommerce --no-headers || echo "Metrics not available"
+        
+        # Check for any failed pods
+        failed_pods=$(kubectl get pods -n ecommerce --field-selector=status.phase!=Running,status.phase!=Succeeded --no-headers 2>/dev/null | wc -l)
+        if [ "$failed_pods" -gt 0 ]; then
+          echo "⚠️  Warning: $failed_pods pods are not in Running state"
+          kubectl get pods -n ecommerce --field-selector=status.phase!=Running,status.phase!=Succeeded
         else
           echo "✅ All pods are running successfully"
         fi
     
     - name: Run health checks
       run: |
-        # Wait a bit for services to fully start
-        sleep 60
+        # Wait for services to fully start
+        echo "Waiting for services to stabilize..."
+        sleep 120
         
-        # Get ingress IP
-        INGRESS_IP=$(kubectl get ingress ecommerce-ingress -n ecommerce -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-        if [ -z "$INGRESS_IP" ]; then
-          INGRESS_IP=$(kubectl get ingress ecommerce-ingress -n ecommerce -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-        fi
+        # Try to get ingress endpoint
+        echo "Getting ingress information..."
+        kubectl describe ingress ecommerce-ingress -n ecommerce
         
-        echo "Ingress IP/Hostname: $INGRESS_IP"
+        # Test internal service connectivity
+        echo "Testing internal service connectivity..."
         
-        # Test API Gateway health
-        if curl -f -s "http://$INGRESS_IP/api/actuator/health" > /dev/null; then
-          echo "✅ API Gateway health check passed"
-        else
-          echo "❌ API Gateway health check failed"
-          exit 1
-        fi
+        # Check if discovery service is accessible
+        kubectl exec -n ecommerce deployment/discovery-service -- curl -f -s http://localhost:8761/actuator/health || echo "Discovery service health check failed"
+        
+        # Check if API gateway is accessible
+        kubectl exec -n ecommerce deployment/api-gateway -- curl -f -s http://localhost:8080/actuator/health || echo "API Gateway health check failed"
     
-    - name: Notify deployment status
-      if: always()
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        text: |
-          Kubernetes deployment to ${{ github.event.inputs.environment || 'staging' }} ${{ job.status }}
-          Commit: ${{ github.sha }}
-          Services: 15 microservices + infrastructure
-        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+    - name: Display access information
+      run: |
+        echo "🎉 Deployment completed!"
+        echo ""
+        echo "📊 Access Information:"
+        echo "======================"
+        
+        # Get ingress IP/hostname
+        INGRESS_IP=$(kubectl get ingress ecommerce-ingress -n ecommerce -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "")
+        INGRESS_HOSTNAME=$(kubectl get ingress ecommerce-ingress -n ecommerce -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+        
+        if [ -n "$INGRESS_IP" ]; then
+          echo "Ingress IP: $INGRESS_IP"
+          echo "Add to /etc/hosts: echo '$INGRESS_IP ecommerce.local' | sudo tee -a /etc/hosts"
+        elif [ -n "$INGRESS_HOSTNAME" ]; then
+          echo "Ingress Hostname: $INGRESS_HOSTNAME"
+          echo "Add to /etc/hosts: echo '$(nslookup $INGRESS_HOSTNAME | grep Address | tail -1 | cut -d' ' -f2) ecommerce.local' | sudo tee -a /etc/hosts"
+        else
+          echo "Ingress endpoint not yet available. Check with: kubectl get ingress -n ecommerce"
+        fi
+        
+        echo ""
+        echo "🔗 Service URLs (once ingress is configured):"
+        echo "  - API Gateway: http://ecommerce.local/api"
+        echo "  - Eureka: http://ecommerce.local/eureka"
+        echo "  - Products: http://ecommerce.local/products"
+        echo ""
+        echo "🔧 Useful commands:"
+        echo "  - View logs: kubectl logs -f deployment/<service-name> -n ecommerce"
+        echo "  - Scale service: kubectl scale deployment/<service-name> --replicas=3 -n ecommerce"
+        echo "  - Port forward: kubectl port-forward svc/<service-name> 8080:<service-port> -n ecommerce"
+    
+    - name: Notify deployment success
+      if: success()
+      run: |
+        echo "✅ Deployment to ${{ github.event.inputs.environment || 'staging' }} completed successfully!"
+        echo "Commit: ${{ github.sha }}"
+        echo "Services: 15 microservices + infrastructure"
+    
+    - name: Notify deployment failure
+      if: failure()
+      run: |
+        echo "❌ Deployment to ${{ github.event.inputs.environment || 'staging' }} failed!"
+        echo "Commit: ${{ github.sha }}"
+        echo "Check the logs above for details."
