@@ -56,13 +56,13 @@ jobs:
           - payment-service
           - inventory-service
           - notification-service
-          - shipping-service
           - favourite-service
-          - promotion-service
+          - media-service
+          - shipping-service
+          - promotion-service  
           - rating-service
           - tax-service
           - search-service
-          - media-service
     
     permissions:
       contents: read
@@ -149,13 +149,13 @@ jobs:
           - payment-service
           - inventory-service
           - notification-service
-          - shipping-service
           - favourite-service
-          - promotion-service
+          - media-service
+          - shipping-service
+          - promotion-service  
           - rating-service
           - tax-service
           - search-service
-          - media-service
     
     steps:
     - name: Run Trivy vulnerability scanner

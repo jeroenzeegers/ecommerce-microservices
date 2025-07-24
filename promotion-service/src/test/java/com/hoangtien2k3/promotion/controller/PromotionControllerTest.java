@@ -37,7 +37,7 @@ import com.hoangtien2k3.promotion.viewmodel.PromotionListVm;
 import com.hoangtien2k3.promotion.viewmodel.PromotionPostVm;
 import com.hoangtien2k3.promotion.viewmodel.PromotionPutVm;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = PromotionController.class)

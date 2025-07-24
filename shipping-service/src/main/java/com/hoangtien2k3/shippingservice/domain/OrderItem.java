@@ -3,7 +3,7 @@ package com.hoangtien2k3.shippingservice.domain;
 import com.hoangtien2k3.shippingservice.domain.id.OrderItemId;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
 

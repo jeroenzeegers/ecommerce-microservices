@@ -11,7 +11,7 @@ import com.hoangtien2k3.promotion.viewmodel.PromotionDto;
 import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidatorContext;
 
 class PromotionValidatorTest {
 

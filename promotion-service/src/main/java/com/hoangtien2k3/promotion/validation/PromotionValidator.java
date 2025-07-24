@@ -3,10 +3,10 @@ package com.hoangtien2k3.promotion.validation;
 import com.hoangtien2k3.promotion.model.enumeration.DiscountType;
 import com.hoangtien2k3.promotion.model.enumeration.UsageType;
 import com.hoangtien2k3.promotion.viewmodel.PromotionDto;
-import liquibase.repackaged.org.apache.commons.collections4.CollectionUtils;
+import org.springframework.util.CollectionUtils;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 public class PromotionValidator implements ConstraintValidator<PromotionConstraint, PromotionDto> {
 
@@ -41,9 +41,9 @@ public class PromotionValidator implements ConstraintValidator<PromotionConstrai
 
     private static boolean isValidApplyToItems(PromotionDto promotion, boolean isValid) {
         return switch (promotion.getApplyTo()) {
-            case PRODUCT -> isValid && CollectionUtils.isNotEmpty(promotion.getProductIds());
-            case BRAND -> isValid && CollectionUtils.isNotEmpty(promotion.getBrandIds());
-            case CATEGORY -> isValid && CollectionUtils.isNotEmpty(promotion.getCategoryIds());
+            case PRODUCT -> isValid && !CollectionUtils.isEmpty(promotion.getProductIds());
+            case BRAND -> isValid && !CollectionUtils.isEmpty(promotion.getBrandIds());
+            case CATEGORY -> isValid && !CollectionUtils.isEmpty(promotion.getCategoryIds());
         };
     }
 }
