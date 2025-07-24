@@ -46,11 +46,13 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.opencsv</groupId>-->
-<!--            <artifactId>opencsv</artifactId>-->
-<!--            <version>${opencsv.version}</version>-->
-<!--        </dependency>-->
+        
+        <!-- OpenCSV for CSV export functionality -->
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.8</version>
+        </dependency>
 
         <!-- Test Dependency -->
         <dependency>
