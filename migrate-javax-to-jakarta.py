@@ -123,7 +123,9 @@ def main():
         'order-service',
         'payment-service',
         'product-service',
-        'user-service'
+        'user-service',
+        'inventory-service',
+        'favourite-service'
     ]
     
     print("🚀 Starting javax to jakarta migration...")

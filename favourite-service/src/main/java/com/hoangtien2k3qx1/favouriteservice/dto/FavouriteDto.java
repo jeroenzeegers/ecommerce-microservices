@@ -3,7 +3,7 @@ package com.hoangtien2k3qx1.favouriteservice.dto;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -1,7 +1,7 @@
 package com.hoangtien2k3.media.service;
 
 import com.hoangtien2k3.commonlib.exception.NotFoundException;
-import com.hoangtien2k3.media.config.hoangtien2k3Config;
+import com.hoangtien2k3.media.config.YasConfig;
 import com.hoangtien2k3.media.mapper.MediaVmMapper;
 import com.hoangtien2k3.media.model.Media;
 import com.hoangtien2k3.media.model.dto.MediaDto;
@@ -27,7 +27,7 @@ public class MediaServiceImpl implements MediaService {
     private final MediaVmMapper mediaVmMapper;
     private final MediaRepository mediaRepository;
     private final FileSystemRepository fileSystemRepository;
-    private final hoangtien2k3Config hoangtien2k3Config;
+    private final YasConfig yasConfig;
 
     @Override
     @SneakyThrows
@@ -104,7 +104,7 @@ public class MediaServiceImpl implements MediaService {
     }
 
     private String getMediaUrl(Long mediaId, String fileName) {
-        return UriComponentsBuilder.fromUriString(hoangtien2k3Config.publicUrl())
+        return UriComponentsBuilder.fromUriString(yasConfig.publicUrl())
                 .path(String.format("/medias/%1$s/file/%2$s", mediaId, fileName))
                 .build().toUriString();
     }
