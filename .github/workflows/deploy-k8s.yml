@@ -43,12 +43,18 @@ jobs:
         kubectl apply -f k8s/base/namespace.yaml
     
     - name: Create Datadog secret
-      if: ${{ secrets.DD_API_KEY != '' }}
+      env:
+        DD_API_KEY: ${{ secrets.DD_API_KEY }}
       run: |
-        kubectl create secret generic datadog-secret \
-          --from-literal=DD_API_KEY="${{ secrets.DD_API_KEY }}" \
-          -n ecommerce \
-          --dry-run=client -o yaml | kubectl apply -f -
+        if [ -n "$DD_API_KEY" ]; then
+          kubectl create secret generic datadog-secret \
+            --from-literal=DD_API_KEY="$DD_API_KEY" \
+            -n ecommerce \
+            --dry-run=client -o yaml | kubectl apply -f -
+          echo "✅ Datadog secret created"
+        else
+          echo "⚠️  DD_API_KEY not provided, skipping Datadog secret creation"
+        fi
     
     - name: Deploy configuration
       run: |
@@ -76,10 +82,16 @@ jobs:
         sleep 30
     
     - name: Deploy Datadog agent
-      if: ${{ secrets.DD_API_KEY != '' }}
+      env:
+        DD_API_KEY: ${{ secrets.DD_API_KEY }}
       run: |
-        kubectl apply -f k8s/base/datadog.yaml
-        kubectl wait --for=condition=ready --timeout=300s pod -l app=datadog-agent -n ecommerce || true
+        if [ -n "$DD_API_KEY" ]; then
+          kubectl apply -f k8s/base/datadog.yaml
+          kubectl wait --for=condition=ready --timeout=300s pod -l app=datadog-agent -n ecommerce || true
+          echo "✅ Datadog agent deployed"
+        else
+          echo "⚠️  DD_API_KEY not provided, skipping Datadog agent deployment"
+        fi
     
     - name: Update image tags
       run: |
